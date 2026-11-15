@@ -1,0 +1,34 @@
+cff-version: 1.2.0
+message: "Если вы используете этот проект, пожалуйста, ссылайтесь на него."
+title: "Умный кошелёк — чат-бот учёта личных финансов для мессенджера MAX"
+abstract: >-
+  Бот-финансовый помощник для мессенджера MAX: учёт доходов и расходов
+  кнопками, текстом и голосом, баланс, история, статистика, месячные бюджеты
+  с уведомлениями, цели накопления, экспорт в CSV/Excel и AI-функции
+  (разбор фраз, голосовой ввод, AI-помощник).
+authors:
+  - family-names: "Писарев"
+    given-names: "Михаил"
+    alias: "mihailpisarev1970-cmd"
+    website: "https://pisarevpro.ru"
+version: 1.0.0
+date-released: 2026-11-15
+license: MIT
+repository-code: "https://github.com/mihailpisarev1970-cmd/smart_wallet"
+url: "https://github.com/mihailpisarev1970-cmd/smart_wallet"
+keywords:
+  - чат-бот
+  - учёт финансов
+  - личные финансы
+  - бюджет
+  - мессенджер MAX
+  - MAX Bot API
+  - Python
+  - Django
+  - PostgreSQL
+  - AI
+  - LLM
+  - распознавание речи
+  - personal finance bot
+  - budget tracker
+  - chatbot

@@ -1,0 +1,89 @@
+# ===========================================================================
+#  .gitignore — «Умный кошелёк» (MAX bot)
+#  Базовая часть — GitHub Python template, ниже — правила проекта.
+# ===========================================================================
+
+# --- Python -----------------------------------------------------------
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+.venv/
+venv/
+env/
+ENV/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# --- Секреты: никогда не коммитим ---
+.env
+.env.*
+!.env.example
+*.env
+*.pem
+*.key
+*.p12
+*.pfx
+.secrets/
+secrets/
+
+# --- Приватные SSH-ключи и сертификаты сервера ---
+.ssh/
+id_rsa
+id_ed25519
+certs/
+
+# --- Готовые production-конфиги с реальными ключами ---
+deploy/.env.production.ready
+deploy/env.production
+deploy/*.env
+deploy/env.*
+
+# --- Локальные артефакты и отчёты ---
+logs/
+*.log
+media/
+exports/
+.docs/
+.report/
+db_backups/
+
+# --- Локальные агенты / IDE-настройки ---
+.continue/
+.clinerules/
+.idea/
+.vscode/
+Thumbs.db
+desktop.ini
+
+# Локальная разработка / приватные скрипты
+scripts/vps*.py
+scripts/server/
+scripts/make_prod_env.py
+
+# --- Прочее ---
+*.docx
+*.bak
+*.tmp
+.tmp*

@@ -1,0 +1,127 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+  .dash-wrap { padding: 16px 0; }
+  .dash-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-bottom: 20px; }
+  .dash-card { background: var(--body-bg, #fff); border: 1px solid var(--hairline-color, #ddd); border-radius: 8px; padding: 16px; }
+  .dash-card h2 { margin: 0 0 12px; font-size: 14px; text-transform: uppercase; letter-spacing: .04em; color: var(--body-quiet-color, #666); }
+  .dash-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed var(--hairline-color, #eee); font-size: 14px; }
+  .dash-row:last-child { border-bottom: none; }
+  .dash-row b { font-variant-numeric: tabular-nums; }
+  .dash-big { font-size: 26px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .pos { color: #1a7f37; }
+  .neg { color: #cf222e; }
+  .muted { color: var(--body-quiet-color, #777); font-size: 12px; }
+  .dash-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .dash-table th, .dash-table td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--hairline-color, #eee); }
+  .dash-table th { color: var(--body-quiet-color, #666); font-weight: 600; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dash-wrap">
+  <p class="muted">Сводка на {{ now|date:"d.m.Y H:i" }}</p>
+
+  <div class="dash-grid">
+    <!-- Пользователи -->
+    <div class="dash-card">
+      <h2>Пользователи</h2>
+      <div class="dash-big">{{ users_stats.total }}</div>
+      <div class="dash-row"><span>Новых за неделю</span><b>{{ users_stats.new_week }}</b></div>
+      <div class="dash-row"><span>Активны за сутки</span><b>{{ users_stats.active_day }}</b></div>
+      <div class="dash-row"><span>Активны за неделю</span><b>{{ users_stats.active_week }}</b></div>
+      <div class="dash-row"><span>Прошли онбординг</span><b>{{ users_stats.onboarded }}</b></div>
+      <div class="dash-row"><span>С подпиской AI</span><b class="pos">{{ users_stats.paid }}</b></div>
+    </div>
+
+    <!-- Финансы -->
+    <div class="dash-card">
+      <h2>Операции</h2>
+      <div class="dash-big">{{ tx_stats.total }}</div>
+      <div class="dash-row"><span>Доходы</span><b class="pos">{{ tx_stats.income|floatformat:2 }}</b></div>
+      <div class="dash-row"><span>Расходы</span><b class="neg">{{ tx_stats.expense|floatformat:2 }}</b></div>
+      <div class="dash-row"><span>Баланс</span><b>{{ tx_stats.balance|floatformat:2 }}</b></div>
+      <div class="dash-row"><span>За неделю</span><b>{{ tx_stats.week }}</b></div>
+      <div class="dash-row">
+        <span>По источникам</span>
+        <b>
+          {% for item in tx_stats.by_source %}{{ item.source }}: {{ item.count }}{% if not forloop.last %} · {% endif %}{% endfor %}
+        </b>
+      </div>
+    </div>
+
+    <!-- AI -->
+    <div class="dash-card">
+      <h2>AI-запросы</h2>
+      <div class="dash-big">{{ ai_stats.total }}</div>
+      <div class="dash-row"><span>STT (голос)</span><b>{{ ai_stats.stt }}</b></div>
+      <div class="dash-row"><span>LLM (текст/помощник)</span><b>{{ ai_stats.llm }}</b></div>
+      <div class="dash-row"><span>Ошибок</span><b class="{% if ai_stats.failed %}neg{% endif %}">{{ ai_stats.failed }}</b></div>
+      <div class="dash-row"><span>Fallback сработал</span><b>{{ ai_stats.fallback }}</b></div>
+      <div class="dash-row"><span>Расходы за 30 дней</span><b>${{ ai_stats.cost_month|floatformat:4 }}</b></div>
+      <div class="dash-row"><span>Расходы всего</span><b>${{ ai_stats.cost_total|floatformat:4 }}</b></div>
+    </div>
+
+    <!-- Подписки -->
+    <div class="dash-card">
+      <h2>Подписки</h2>
+      <div class="dash-big">{{ subscription_stats.active }}</div>
+      <div class="dash-row"><span>Ожидают оплаты</span><b>{{ subscription_stats.pending }}</b></div>
+      <div class="dash-row"><span>Выручка (активные)</span><b class="pos">{{ subscription_stats.revenue|floatformat:2 }} ₽</b></div>
+    </div>
+  </div>
+
+  <div class="dash-grid">
+    <div class="dash-card">
+      <h2>AI по типам</h2>
+      <table class="dash-table">
+        <tr><th>Тип</th><th>Запросов</th><th>Стоимость</th></tr>
+        {% for item in ai_stats.by_type %}
+        <tr>
+          <td>{{ item.request_type }}</td>
+          <td>{{ item.count }}</td>
+          <td>${{ item.cost|default:0|floatformat:4 }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="3" class="muted">Пока нет данных</td></tr>
+        {% endfor %}
+      </table>
+    </div>
+
+    <div class="dash-card">
+      <h2>Модели</h2>
+      <table class="dash-table">
+        <tr><th>Модель</th><th>Запросов</th><th>Стоимость</th></tr>
+        {% for item in ai_stats.by_model %}
+        <tr>
+          <td>{{ item.model_used|default:"—" }}</td>
+          <td>{{ item.count }}</td>
+          <td>${{ item.cost|default:0|floatformat:4 }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="3" class="muted">Пока нет данных</td></tr>
+        {% endfor %}
+      </table>
+    </div>
+
+    <div class="dash-card">
+      <h2>Последние подписки</h2>
+      <table class="dash-table">
+        <tr><th>Пользователь</th><th>Статус</th><th>Сумма</th></tr>
+        {% for sub in subscription_stats.recent %}
+        <tr>
+          <td>{{ sub.user.max_user_id }}</td>
+          <td>{{ sub.get_status_display }}</td>
+          <td>{{ sub.amount|floatformat:2 }} ₽</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="3" class="muted">Платежей пока нет</td></tr>
+        {% endfor %}
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

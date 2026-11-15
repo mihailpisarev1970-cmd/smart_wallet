@@ -1,0 +1,87 @@
+# «Умный кошелёк» — production на VPS (Ubuntu 24.04).
+#
+# Контейнеры:
+#   wallet_PostgreSQL — PostgreSQL 16, данные в volume wallet_pgdata
+#   wallet            — бот MAX (aiohttp :8081) + админка (gunicorn :8001)
+#
+# Порты публикуются только на 127.0.0.1 — снаружи доступ через nginx + HTTPS.
+# Существующие проекты на сервере (DocAI :8000, Adminer :8080) не затрагиваются.
+
+services:
+  wallet_PostgreSQL:
+    image: postgres:16-alpine
+    container_name: wallet_PostgreSQL
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-smart_wallet}
+      POSTGRES_USER: ${POSTGRES_USER:-wallet}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      # Русская локаль не нужна, но UTF-8 обязателен
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+    volumes:
+      - wallet_pgdata:/var/lib/postgresql/data
+      - ./backups:/backups
+    networks:
+      - wallet_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-wallet} -d ${POSTGRES_DB:-smart_wallet}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  wallet:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: wallet
+    restart: unless-stopped
+    depends_on:
+      wallet_PostgreSQL:
+        condition: service_healthy
+    environment:
+      # Секреты и настройки — из .env рядом с этим файлом
+      APP_ENV: production
+      PYTHONUTF8: "1"
+      PYTHONPATH: /app
+      # Внутри Docker БД доступна по имени сервиса
+      DATABASE_URL: postgresql://${POSTGRES_USER:-wallet}:${POSTGRES_PASSWORD}@wallet_PostgreSQL:5432/${POSTGRES_DB:-smart_wallet}
+      TZ: Europe/Moscow
+    env_file:
+      - .env
+    ports:
+      # Только локально: снаружи — через nginx
+      - "127.0.0.1:8081:8080"
+      - "127.0.0.1:8001:8000"
+    volumes:
+      - ./logs:/app/logs
+      - ./certs:/app/certs
+      # Статика админки: контейнер пишет, nginx читает из /opt/wallet/static
+      - ./static:/app/static
+    networks:
+      - wallet_net
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8080/healthz', timeout=3).status==200 else 1)\""]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    logging:
+      driver: json-file
+      options:
+        max-size: "20m"
+        max-file: "5"
+
+volumes:
+  wallet_pgdata:
+    name: wallet_pgdata
+
+networks:
+  wallet_net:
+    name: wallet_net
+    external: true

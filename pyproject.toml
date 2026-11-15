@@ -1,0 +1,32 @@
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+extend-exclude = [".venv", "admin_panel/wallet/migrations", ".docs"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "C4", "SIM", "RUF"]
+ignore = [
+    "E501",   # длину строк контролирует formatter
+    "RUF001", # кириллица в строках — это норма для русскоязычного бота
+    "RUF002",
+    "RUF003",
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["bot", "wallet", "admin_panel", "scripts"]
+
+[tool.ruff.lint.per-file-ignores]
+"admin_panel/wallet/migrations/*" = ["E", "F", "W"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+addopts = "-ra --strict-markers"
+markers = [
+    "live: тесты, обращающиеся к реальным внешним API (по умолчанию пропускаются)",
+]
+filterwarnings = [
+    "ignore::DeprecationWarning:asyncpg.*",
+]

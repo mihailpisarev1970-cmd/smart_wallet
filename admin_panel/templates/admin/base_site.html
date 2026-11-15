@@ -1,0 +1,9 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block branding %}
+<div id="site-name">
+  <a href="{% url 'admin:index' %}">{{ site_header|default:_('Django administration') }}</a>
+  &nbsp;·&nbsp;<a href="{% url 'dashboard' %}" style="font-weight:normal">Дашборд</a>
+</div>
+{% endblock %}
