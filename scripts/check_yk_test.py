@@ -32,7 +32,7 @@ def call(method: str, path: str, body: dict | None = None) -> tuple[int, dict | 
             return response.status, json.loads(response.read())
     except urllib.error.HTTPError as exc:
         return exc.code, exc.read().decode("utf-8", errors="replace")[:400]
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:
         return 0, f"{type(exc).__name__}: {exc}"
 
 
